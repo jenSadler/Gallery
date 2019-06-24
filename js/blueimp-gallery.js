@@ -1228,19 +1228,8 @@
       var prop
 
 
-      if (obj.getAttribute) {
-        alert('data-' + property.replace(/([A-Z])/g, '-$1').toLowerCase())
-        prop = obj.getAttribute(
-          'data-' + property.replace(/([A-Z])/g, '-$1').toLowerCase()
-        )
-        if(property=="jscaptions"){
-          alert("has the captions");
-          alert(prop)
-          console.log(obj.dataset)
-        }
-        
-      }
-      else if (obj.dataset) {
+      
+      if (obj.dataset) {
 
         key = property.replace(/-([a-z])/g, function (_, b) {
           return b.toUpperCase()
@@ -1248,6 +1237,13 @@
         prop = obj.dataset[key]
         
 
+      }
+      else if (obj.getAttribute) {
+        alert('data-' + property.replace(/([A-Z])/g, '-$1').toLowerCase())
+        prop = obj.getAttribute(
+          'data-' + property.replace(/([A-Z])/g, '-$1').toLowerCase()
+        )
+        
       }
       if (typeof prop === 'string') {
         // eslint-disable-next-line no-useless-escape
@@ -1263,10 +1259,6 @@
     },
 
     getItemProperty: function (obj, property) {
-      console.log("obj---------")
-      console.log(obj)
-      console.log("prop--------")
-      console.log(property)
 
       
       var prop = this.getDataProperty(obj, property)
