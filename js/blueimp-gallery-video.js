@@ -33,7 +33,9 @@
     // The list object property (or data attribute) for the video poster URL:
     videoPosterProperty: 'poster',
     // The list object property (or data attribute) for the video sources array:
-    videoSourcesProperty: 'sources'
+    videoSourcesProperty: 'sources',
+    // The location of subtitle files
+    captionsProperty: 'jscaptions'
   })
 
   var handleSlide = Gallery.prototype.handleSlide
@@ -47,8 +49,12 @@
     },
 
     videoFactory: function (obj, callback, videoInterface) {
+      console.log(obj)
+      
       var that = this
       var options = this.options
+
+      console.log(options.captionsProperty);
       var videoContainerNode = this.elementPrototype.cloneNode(false)
       var videoContainer = $(videoContainerNode)
       var errorArgs = [
@@ -58,9 +64,16 @@
         }
       ]
       var video = videoInterface || document.createElement('video')
+      video.preload="metadata"
+      video.controls =""
       var url = this.getItemProperty(obj, options.urlProperty)
       var type = this.getItemProperty(obj, options.typeProperty)
       var title = this.getItemProperty(obj, options.titleProperty)
+      var captionSrc = this.getItemProperty(obj, options.captionsProperty)
+      //this.getItemProperty(obj, options.captionsProperty)
+      console.log(captionSrc);
+      console.log(options.urlProperty)
+      console.log(url)
       var altText =
         this.getItemProperty(obj, this.options.altTextProperty) || title
       var posterUrl = this.getItemProperty(obj, options.videoPosterProperty)
@@ -70,25 +83,67 @@
       var playMediaControl
       var isLoading
       var hasControls
+      var sourceNode
+      var track
+
+      console.log(sources);
+
       videoContainer.addClass(options.videoContentClass)
       if (title) {
         videoContainerNode.title = title
       }
       if (video.canPlayType) {
         if (url && type && video.canPlayType(type)) {
-          video.src = url
+              sourceNode = document.createElement("source");
+              sourceNode.type = type;
+              sourceNode.src = url;
+              video.appendChild(sourceNode);
         } else if (sources) {
           while (sources.length) {
             source = sources.shift()
             url = this.getItemProperty(source, options.urlProperty)
             type = this.getItemProperty(source, options.typeProperty)
             if (url && type && video.canPlayType(type)) {
-              video.src = url
+
+              sourceNode = document.createElement("source");
+              sourceNode.type = type;
+              sourceNode.src = url;
+              video.appendChild(sourceNode);
               break
             }
           }
         }
       }
+      if (captionSrc) {
+              
+              track = document.createElement("track");
+              track.src = captionSrc;
+              track.label = "english";
+              track.kind = "subtitles";
+              track.srclang = "en";
+          
+              video.appendChild(track);
+        } else if (sources) {
+           
+          while (sources.length) {
+            source = sources.shift()
+            captionSrc = this.getItemProperty(source, options.captionsProperty)
+            
+            if (captionsSrc) {
+
+              alert(captionSrc)
+              track = document.createElement("track");
+              track.src = captionSrc;
+              track.label = "english";
+              track.kind = "subtitles";
+              track.srclang = "en";
+          
+              video.appendChild(track);
+            }
+          }
+        }
+          
+  
       if (posterUrl) {
         video.poster = posterUrl
         posterImage = this.imagePrototype.cloneNode(false)
@@ -104,7 +159,7 @@
         playMediaControl.setAttribute('download', title)
       }
       playMediaControl.href = url
-      if (video.src) {
+      if (sourceNode.src) {
         video.controls = true
         ;(videoInterface || $(video))
           .on('error', function () {
